@@ -18,11 +18,11 @@ from plotly.subplots import make_subplots
 
 DEBUG = False
 MongoDBargs = {
-    'MongoDBhost': "0.0.0.0",
+    'MongoDBhost': "58.22.71.130",
     'MongoDBport': 27017,
-    'MongoDBusername': "***",
-    'MongoDBpassword': "***",
-    'MongoDBdatabase': "***"
+    'MongoDBusername': "aba_r",
+    'MongoDBpassword': "aba_r",
+    'MongoDBdatabase': "ABAweekly"
 }
 
 
@@ -116,13 +116,13 @@ def plotlytrace(data1, data2, filename, auto_open=False):
     ranknum = len(data1) - data1["#1 已点击的 ASIN"].isnull().sum()
     # fig = go.Figure()
     fig = make_subplots(rows=3, cols=1, subplot_titles=("ABA趋势图", "ABA逆向趋势图", "Google趋势图"))
-    fig.add_trace(go.Scatter(x=data1["week"], y=data1["搜索频率排名"], text=data1["搜索频率排名"], mode="markers+lines+text", name="每周排名", textposition="top center"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=data1["week"], y=data1["搜索频率排名"], hovertext=data1["week"].astype("string") + ": " + data1["搜索频率排名"].astype("string"), text=data1["搜索频率排名"], mode="markers+lines+text", name="每周排名", textposition="top center"), row=1, col=1)
     fig.add_trace(go.Scatter(x=data1["week"], y=[averagenum for i in range(len(data1))], mode="lines", line=dict(dash="longdashdot", width=3), name="ABA平均值"), row=1, col=1)
     fig.update_layout({'title': data1["搜索词"][1]+"平均排名: {:.2f}, 在榜周数: {}".format(averagenum, ranknum)})
 
     re_averagenum = 1000000-data1["搜索频率排名"].sum() / len(data1)
     fig.add_trace(
-        go.Scatter(x=data1["week"], y=1000000-data1["搜索频率排名"], text=1000000-data1["搜索频率排名"], mode="markers+lines+text",
+        go.Scatter(x=data1["week"], y=1000000-data1["搜索频率排名"], hovertext=data1["week"].astype("string") + ": " + (1000000-data1["搜索频率排名"]).astype("string"), text=1000000-data1["搜索频率排名"], mode="markers+lines+text",
                    name="每周排名", textposition="top center"), row=2, col=1)
     fig.add_trace(
         go.Scatter(x=data1["week"], y=[re_averagenum for i in range(len(data1))], mode="lines", line=dict(dash="longdashdot", width=3), name="ABA平均值"),
@@ -223,7 +223,12 @@ def searchABAGtrend():
             myquery = {"搜索词": search_word}
             filename = search_word
             df_aba = findallcollections(mydb, myquery=myquery, limitNum=1, fileName=resultpath + filename, threadNum=5)
-            df_gtrend = getGoogleTrend(trends, config, search_word, resultpath + filename)
+            for j in range(3):
+                df_gtrend = getGoogleTrend(trends, config, search_word, resultpath + filename)
+                if df_gtrend is not False:
+                    break
+                else:
+                    time.sleep(3)
             plotlytrace(df_aba, df_gtrend, resultpath + filename, True)
         else:
             print("含有非法字符：\\/:*?\"<>|")
@@ -262,7 +267,12 @@ def searchABAGtrendByFile():
             filename = str(cnt)
         myquery = {"搜索词": word}
         df_aba = findallcollections(mydb, myquery=myquery, limitNum=1, fileName=resultpath + filename, threadNum=5)
-        df_gtrend = getGoogleTrend(trends, config, word, resultpath + filename)
+        for j in range(3):
+            df_gtrend = getGoogleTrend(trends, config, search_word, resultpath + filename)
+            if df_gtrend is not False:
+                break
+            else:
+                time.sleep(3)
         plotlytrace(df_aba, df_gtrend, resultpath + filename, False)
         ranknum = len(df_aba) - df_aba["#1 已点击的 ASIN"].isnull().sum()
         excel_hyperlink = "=HYPERLINK(\"" + resultpath + filename + ".html\")"
