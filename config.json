@@ -1,0 +1,9 @@
+{
+	"https_proxy": ["http://127.0.0.1:33000", "http://127.0.0.1:33001", "http://127.0.0.1:33002", "http://127.0.0.1:33003", "http://127.0.0.1:33004"],
+	"retries": 3,
+	"hl": "en-US",
+	"tz": 420,
+	"authority": "trends.google.com",
+	"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36 Core/1.94.172.400 QQBrowser/11.1.5140.400",
+	"cookie": "*****************************"
+}
