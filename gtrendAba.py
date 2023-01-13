@@ -18,11 +18,11 @@ from plotly.subplots import make_subplots
 
 DEBUG = False
 MongoDBargs = {
-    'MongoDBhost': "58.22.71.130",
+    'MongoDBhost': "0.0.0.0",
     'MongoDBport': 27017,
-    'MongoDBusername': "aba_r",
-    'MongoDBpassword': "aba_r",
-    'MongoDBdatabase': "ABAweekly"
+    'MongoDBusername': "***",
+    'MongoDBpassword': "***",
+    'MongoDBdatabase': "***"
 }
 
 
