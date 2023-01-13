@@ -113,11 +113,12 @@ def plotlytrace(data1, data2, filename, auto_open=False):
     # print(data)
     # validnum = len(data) - data["#1 已点击的 ASIN"].isnull().sum()
     averagenum = data1["搜索频率排名"].sum() / len(data1)
+    ranknum = len(data1) - data1["#1 已点击的 ASIN"].isnull().sum()
     # fig = go.Figure()
     fig = make_subplots(rows=3, cols=1, subplot_titles=("ABA趋势图", "ABA逆向趋势图", "Google趋势图"))
     fig.add_trace(go.Scatter(x=data1["week"], y=data1["搜索频率排名"], text=data1["搜索频率排名"], mode="markers+lines+text", name="每周排名", textposition="top center"), row=1, col=1)
     fig.add_trace(go.Scatter(x=data1["week"], y=[averagenum for i in range(len(data1))], mode="lines", line=dict(dash="longdashdot", width=3), name="ABA平均值"), row=1, col=1)
-    fig.update_layout({'title': data1["搜索词"][1]+"平均排名: {:.2f}".format(averagenum)})
+    fig.update_layout({'title': data1["搜索词"][1]+"平均排名: {:.2f}, 在榜周数: {}".format(averagenum, ranknum)})
 
     re_averagenum = 1000000-data1["搜索频率排名"].sum() / len(data1)
     fig.add_trace(
@@ -133,7 +134,7 @@ def plotlytrace(data1, data2, filename, auto_open=False):
         yloc = np.where(data2["date"] == data1["week"][len(data1)-1])
         xloc = xloc[0].tolist()
         yloc = yloc[0].tolist()
-        fig.add_trace(go.Scatter(x=data2["date"][xloc[0]: yloc[0]], y=data2[data2.columns.values[1]][xloc[0]: yloc[0]], mode="markers+lines", name="ABA同周期", xaxis="x2", yaxis="y2"), row=3, col=1)
+        fig.add_trace(go.Scatter(x=data2["date"][xloc[0]: yloc[0]+1], y=data2[data2.columns.values[1]][xloc[0]: yloc[0]+1], mode="markers+lines", name="ABA同周期", xaxis="x2", yaxis="y2"), row=3, col=1)
     if filename != "":
         filename = filename + ".html"
         plotly.offline.plot(fig, filename=filename, auto_open=False)
@@ -248,6 +249,7 @@ def searchABAGtrendByFile():
                key == "user-agent" or key == "authority" or key == "cookie"}
     trends = requestgtrend.GtrendReq(hl=config["hl"], tz=config["tz"], retries=config["retries"])
     trends.headers = headers
+    resultset = []
     time_start = time.time()
     for word, filename, cnt in zip(search_word, file_name, range(1, len(file_name)+1)):
         word = word.lower()
@@ -262,6 +264,17 @@ def searchABAGtrendByFile():
         df_aba = findallcollections(mydb, myquery=myquery, limitNum=1, fileName=resultpath + filename, threadNum=5)
         df_gtrend = getGoogleTrend(trends, config, word, resultpath + filename)
         plotlytrace(df_aba, df_gtrend, resultpath + filename, False)
+        ranknum = len(df_aba) - df_aba["#1 已点击的 ASIN"].isnull().sum()
+        excel_hyperlink = "=HYPERLINK(\"" + resultpath + filename + ".html\")"
+        if df_gtrend is False:
+            gtrendflag = '查询异常'
+        elif df_gtrend is None:
+            gtrendflag = '无谷歌趋势'
+        else:
+            gtrendflag = '有谷歌趋势'
+        resultset.append((word, gtrendflag, ranknum, excel_hyperlink))
+    df_resultset = pd.DataFrame(resultset, columns=["搜索词", "谷歌趋势", "ABA趋势在榜周数", "趋势图链接"])
+    df_resultset.to_excel(resultpath+os.path.splitext(os.path.basename(filepath))[0]+"-汇总报告.xlsx", index=None)
     time_end = time.time()
     input("已生成报告, 耗时时间:{:.2f}, 平均耗时:{:.2f}, 按回车键结束".format(time_end - time_start, (time_end - time_start) / len(df)))
 
