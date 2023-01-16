@@ -241,8 +241,10 @@ def searchABAGtrendByFile():
     df.fillna('$null', inplace=True)
     search_word = df.iloc[:, 0].tolist()
     file_name = df.iloc[:, 1].tolist()
-    exec_path = os.path.splitext(sys.executable)
-    resultpath = exec_path[0] + " datafile" + "\\"
+    parentpath = os.path.dirname(filepath) + "\\"
+    resultpath = parentpath + os.path.splitext(os.path.basename(filepath))[0] + "-主题趋势报告" + "\\"
+    # exec_path = os.path.splitext(sys.executable)
+    # resultpath = exec_path[0] + " datafile" + "\\"
     if not os.path.isdir(resultpath):
         os.mkdir(resultpath)
     myclient = connectMongoDB(MongoDBargs)
@@ -268,7 +270,7 @@ def searchABAGtrendByFile():
         myquery = {"搜索词": word}
         df_aba = findallcollections(mydb, myquery=myquery, limitNum=1, fileName=resultpath + filename, threadNum=5)
         for j in range(3):
-            df_gtrend = getGoogleTrend(trends, config, search_word, resultpath + filename)
+            df_gtrend = getGoogleTrend(trends, config, word, resultpath + filename)
             if df_gtrend is not False:
                 break
             else:
