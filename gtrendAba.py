@@ -314,7 +314,7 @@ def getGoogleTrend(trends, config, searchword, filename):
         os.environ["https_proxy"] = config["https_proxy"][random.randint(0, len(config["https_proxy"]) - 1)]
         print("切换至:" + os.environ["https_proxy"] + "\n")
         time.sleep(random.uniform(1, 3))
-        return None
+        return False
 
     if df.empty:
         print("{}-主题无趋势".format(searchword))
